@@ -39,6 +39,7 @@ type Route = 'preview' | 'convert'
 
 type LoadState =
   | { status: 'loading' }
+  | { status: 'loading_image'; sprite: LoadedSprite; progress: number }
   | { status: 'ready'; sprite: LoadedSprite }
   | { status: 'error'; message: string }
 
@@ -119,6 +120,7 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
   const [showCenterMarker, setShowCenterMarker] = useState(false)
   const [pointerPos, setPointerPos] = useState<Point>({ x: 0.5, y: 0.5 })
   const spriteRef = useRef<HTMLDivElement>(null)
+  const imageUrlRef = useRef<string | null>(null)
 
   useCursorEffect(cursorStyle)
 
@@ -131,18 +133,41 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
     const asset = sprites.find((sprite) => sprite.id === effectiveSpriteId) ?? sprites[0]
     if (!asset) return undefined
 
+    // Revoke previous blob URL
+    if (imageUrlRef.current && imageUrlRef.current.startsWith('blob:')) {
+      URL.revokeObjectURL(imageUrlRef.current)
+    }
+    imageUrlRef.current = null
+
     loadSpriteMetadata(asset)
-      .then((metadata) => {
+      .then(async (metadata) => {
         if (!alive) return
         const normalized = normalizeMetadata(metadata)
         const points = normalizePoints2D(normalized.calibration?.calibrationPoints ?? [], normalized.frameCount)
-        setLoadState({ status: 'ready', sprite: { ...asset, metadata: normalized } })
+        const sprite: LoadedSprite = { ...asset, metadata: normalized }
+
+        setLoadState({ status: 'loading_image', sprite, progress: 0 })
         setCenterPoint(normalized.calibration?.centerPoint ?? null)
         setCalibrationPoints(points)
         setSelectedPointIndex(points.length > 0 ? 0 : -1)
         setSelectedFrame(points[0]?.frame ?? 0)
         setCalibrating(Boolean(normalized.calibration?.calibrating))
         setPointerPos(normalized.calibration?.centerPoint ?? { x: 0.5, y: 0.5 })
+
+        // Preload the WebP image with download progress
+        const imageUrl = spriteImageUrl(asset, normalized)
+        try {
+          const loadedUrl = await fetchImageWithProgress(imageUrl, (progress) => {
+            if (alive) setLoadState({ status: 'loading_image', sprite, progress })
+          })
+          if (!alive) return
+          imageUrlRef.current = loadedUrl
+        } catch {
+          // Fall back to original URL if progress tracking fails
+          imageUrlRef.current = imageUrl
+        }
+
+        if (alive) setLoadState({ status: 'ready', sprite })
       })
       .catch((error: Error) => {
         if (alive) setLoadState({ status: 'error', message: error.message })
@@ -153,8 +178,8 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
     }
   }, [effectiveSpriteId, sprites])
 
-  const metadata = loadState.status === 'ready' ? loadState.sprite.metadata : null
-  const activeAsset = loadState.status === 'ready' ? loadState.sprite : null
+  const metadata = loadState.status === 'ready' || loadState.status === 'loading_image' ? loadState.sprite.metadata : null
+  const activeAsset = loadState.status === 'ready' || loadState.status === 'loading_image' ? loadState.sprite : null
   const frameCount = metadata?.frameCount ?? 1
   const points = useMemo(
     () => normalizePoints2D(calibrationPoints, frameCount),
@@ -344,6 +369,14 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
       <section className="stage" aria-label="Sprite preview">
         {loadState.status === 'loading' ? <div className="loading">Loading sprite...</div> : null}
         {loadState.status === 'error' ? <div className="loading">{loadState.message}</div> : null}
+        {loadState.status === 'loading_image' ? (
+          <div className="image-loading">
+            <div className="image-loading-message">Loading image… {loadState.progress}%</div>
+            <div className="progress-track">
+              <span style={{ width: `${loadState.progress}%` }} />
+            </div>
+          </div>
+        ) : null}
         {metadata ? (
           <>
             <div className="stage-meta">
@@ -359,7 +392,7 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
               onPointerDown={handleSpriteClick}
               style={{
                 aspectRatio: `${metadata.frameWidth} / ${metadata.frameHeight}`,
-                backgroundImage: `url("${spriteImageUrl(activeAsset, metadata)}")`,
+                backgroundImage: `url("${imageUrlRef.current ?? spriteImageUrl(activeAsset, metadata)}")`,
                 backgroundSize: `${metadata.columns * 100}% ${metadata.rows * 100}%`,
                 backgroundPosition: `${backgroundPosition.x}% ${backgroundPosition.y}%`,
               }}
@@ -701,6 +734,41 @@ async function loadSpriteMetadata(asset: SpriteAsset) {
 
 function spriteImageUrl(asset: SpriteAsset | null, metadata: SpriteMetadata) {
   return `${asset?.imageBaseUrl ?? `${import.meta.env.BASE_URL}sprites/`}${metadata.image}`
+}
+
+/** Preload an image via fetch with download progress callbacks. Returns a blob URL. */
+async function fetchImageWithProgress(
+  url: string,
+  onProgress: (progress: number) => void,
+): Promise<string> {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Failed to load image: ${response.statusText}`)
+
+  const contentLength = response.headers.get('Content-Length')
+  const body = response.body
+  if (!contentLength || !body) return url
+
+  const total = parseInt(contentLength, 10)
+  let received = 0
+  const chunks: Uint8Array[] = []
+  const reader = body.getReader()
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(value)
+    received += value.length
+    onProgress(Math.min(Math.round((received / total) * 100), 99))
+  }
+
+  const all = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    all.set(chunk, offset)
+    offset += chunk.length
+  }
+  const blob = new Blob([all], { type: 'image/webp' })
+  return URL.createObjectURL(blob)
 }
 
 function normalizeMetadata(metadata: SpriteMetadata): SpriteMetadata {

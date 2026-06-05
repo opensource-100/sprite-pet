@@ -8,6 +8,10 @@ SpritePet 是一个前端优先的工具，用于预览、校准和可选地生�
 
 ![演示](demo.gif)
 
+## 预览链接
+
+[https://opensource-100.github.io/sprite-pet/](https://opensource-100.github.io/sprite-pet/)
+
 ## 功能特性
 
 - 预览透明 WebP 精灵图集

@@ -415,6 +415,19 @@ button:disabled {
   font-weight: 700;
 }
 
+.image-loading {
+  display: grid;
+  gap: 12px;
+  width: min(52vw, 360px);
+  text-align: center;
+}
+
+.image-loading-message {
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .sprite-view {
   position: relative;
   width: min(52vw, 430px);
