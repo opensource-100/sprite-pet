@@ -1,0 +1,77 @@
+{
+  "source": "cat_range_head.mp4",
+  "model": "ZhengPeng7/BiRefNet_lite",
+  "provider": "mps",
+  "imageSize": 1024,
+  "averageInferenceSeconds": 0.42455823850161606,
+  "despill": {
+    "color": "green",
+    "strength": 1.0
+  },
+  "alphaCleanup": {
+    "threshold": 35,
+    "erode": 0,
+    "alphaMatting": false
+  },
+  "image": "cat-sprite.webp",
+  "frameCount": 199,
+  "frameWidth": 358,
+  "frameHeight": 512,
+  "spriteWidth": 7160,
+  "spriteHeight": 5120,
+  "columns": 20,
+  "rows": 10,
+  "layout": "grid",
+  "cropBox": [
+    112,
+    0,
+    600,
+    698
+  ],
+  "calibration": {
+    "centerPoint": {
+      "x": 0.5238826815642458,
+      "y": 0.2892578125
+    },
+    "calibrationPoints": [
+      {
+        "angle": 0.048164566172261836,
+        "frame": 105
+      },
+      {
+        "angle": 0.5131520374652752,
+        "frame": 82
+      },
+      {
+        "angle": 0.9704009022526998,
+        "frame": 74
+      },
+      {
+        "angle": 1.6180038743981209,
+        "frame": 66
+      },
+      {
+        "angle": 3.1302315233980043,
+        "frame": 24
+      },
+      {
+        "angle": 3.1590459461097353,
+        "frame": 152
+      },
+      {
+        "angle": 3.857177646907468,
+        "frame": 142
+      },
+      {
+        "angle": 4.699694349857307,
+        "frame": 131
+      },
+      {
+        "angle": 5.59414814579233,
+        "frame": 118
+      }
+    ],
+    "reverse": false,
+    "calibrating": false
+  }
+}

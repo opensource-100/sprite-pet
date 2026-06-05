@@ -1,0 +1,68 @@
+{
+  "source": "upload-318a1375.mp4",
+  "model": "ZhengPeng7/BiRefNet_lite",
+  "provider": "mps",
+  "imageSize": 1024,
+  "averageInferenceSeconds": 0.41891698452180387,
+  "despill": {
+    "color": "green",
+    "strength": 1.0
+  },
+  "alphaCleanup": {
+    "threshold": 35,
+    "erode": 0,
+    "alphaMatting": false
+  },
+  "image": "dog-sprite.webp",
+  "frameCount": 299,
+  "frameWidth": 359,
+  "frameHeight": 512,
+  "spriteWidth": 7180,
+  "spriteHeight": 7680,
+  "columns": 20,
+  "rows": 15,
+  "layout": "grid",
+  "cropBox": [
+    112,
+    17,
+    581,
+    685
+  ],
+  "calibration": {
+    "centerPoint": {
+      "x": 0.47075789593923123,
+      "y": 0.27638060149773735
+    },
+    "calibrationPoints": [
+      {
+        "angle": 0,
+        "frame": 95
+      },
+      {
+        "angle": 0.7140886035684026,
+        "frame": 52
+      },
+      {
+        "angle": 1.6057029118347828,
+        "frame": 33
+      },
+      {
+        "angle": 1.6254149210239666,
+        "frame": 278
+      },
+      {
+        "angle": 2.001754060588537,
+        "frame": 268
+      },
+      {
+        "angle": 3.141592653589793,
+        "frame": 209
+      },
+      {
+        "angle": 4.672007300789538,
+        "frame": 158
+      }
+    ],
+    "calibrating": false
+  }
+}

@@ -1,0 +1,16 @@
+numpy
+pillow
+python-multipart
+tqdm
+einops
+kornia
+timm
+
+# CPU CLI pipeline
+rembg
+onnxruntime
+
+# MPS web upload pipeline
+torch
+torchvision
+transformers
