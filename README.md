@@ -6,7 +6,7 @@ SpritePet 是一个前端优先的工具，用于预览、校准和可选地生�
 
 ## 演示
 
-<video src="demo.mp4" controls width="100%"></video>
+![演示](demo.gif)
 
 ## 功能特性
 
