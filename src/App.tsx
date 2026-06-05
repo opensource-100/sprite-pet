@@ -178,8 +178,8 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
     }
   }, [effectiveSpriteId, sprites])
 
-  const metadata = loadState.status === 'ready' || loadState.status === 'loading_image' ? loadState.sprite.metadata : null
-  const activeAsset = loadState.status === 'ready' || loadState.status === 'loading_image' ? loadState.sprite : null
+  const metadata = loadState.status === 'ready' ? loadState.sprite.metadata : null
+  const activeAsset = loadState.status === 'ready' ? loadState.sprite : null
   const frameCount = metadata?.frameCount ?? 1
   const points = useMemo(
     () => normalizePoints2D(calibrationPoints, frameCount),
@@ -367,16 +367,17 @@ function PreviewPage({ sprites }: { sprites: SpriteAsset[] }) {
       </aside>
 
       <section className="stage" aria-label="Sprite preview">
-        {loadState.status === 'loading' ? <div className="loading">Loading sprite...</div> : null}
-        {loadState.status === 'error' ? <div className="loading">{loadState.message}</div> : null}
-        {loadState.status === 'loading_image' ? (
+        {loadState.status === 'loading' || loadState.status === 'loading_image' ? (
           <div className="image-loading">
-            <div className="image-loading-message">Loading image… {loadState.progress}%</div>
+            <div className="image-loading-message">
+              {loadState.status === 'loading_image' ? `Loading… ${loadState.progress}%` : 'Loading…'}
+            </div>
             <div className="progress-track">
-              <span style={{ width: `${loadState.progress}%` }} />
+              <span style={{ width: `${loadState.status === 'loading_image' ? loadState.progress : 0}%` }} />
             </div>
           </div>
         ) : null}
+        {loadState.status === 'error' ? <div className="loading">{loadState.message}</div> : null}
         {metadata ? (
           <>
             <div className="stage-meta">
